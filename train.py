@@ -1,6 +1,7 @@
 import cPickle
 import gzip
 import numpy as np
+from progress.bar import Bar
 
 no_layer = 2
 layer_size = [784, 10]
@@ -36,26 +37,50 @@ def sigmoid(z):
 def sigmoid_prime(z):
     return sigmoid(z)*(1-sigmoid(z))
 
-def main():
+def train():
     #loadong mnist data
     training_data, validation_data, test_data = load_data_wrapper()
-    activations = []
     net_delta_bias = 0
     net_delta_weights = 0
-    for x,y in training_data:
-        activation = sigmoid(np.dot(weights, x) + biases)
-        cost = activation - y
-        delta = cost * sigmoid_prime(activation)
-        net_delta_bias += delta
-        net_delta_weights += np.dot(delta, x.transpose())
+    training_pbar = Bar('Training Progress', max = len(training_data)*50)
+    for i in range(50):
+        for x,y in training_data:
+            training_pbar.next()
+            activation = sigmoid(np.dot(weights, x) + biases)
+            cost = activation - y
+            delta = cost * sigmoid_prime(activation)
+            net_delta_bias += delta
+            net_delta_weights += np.dot(delta, x.transpose())
 
     return (net_delta_weights,net_delta_bias, len(training_data))
-    #biases = [b-(learning_rate*net_delta_bias/len(training_data)) for b in biases]
-    #weights = [w-(learning_rate*net_delta_weights/len(training_data)) for w in weights]
+
+def evaluate():
+    #loading mnist data
+    training_data, validation_data, test_data = load_data_wrapper()
+    accuracy = .0
+    test_pbar = Bar('Test Progress', max = len(test_data))
+    for x,y in test_data:
+        test_pbar.next()
+        activation = sigmoid(np.dot(weights, x) + biases)
+        prediction = np.argmax(activation)
+        if(prediction ==  y):
+            accuracy += 1
+    return (accuracy/len(test_data))
+
 
         
-nw,nb,size = main()
+nw,nb,size = train()
 
-biases = [b-(learning_rate*nb/size) for b in biases]
-weights = [w-(learning_rate*nb/size) for w in weights]
-print(weights)
+biases_correction = learning_rate*nb/size
+for bc,b in zip(biases_correction,biases):
+    b = np.asarray(b-bc, dtype = np.float32)
+
+weights_correction = learning_rate*nw/size
+for wc,w in zip(weights_correction,weights):
+    w = np.asarray(w-wc, dtype = np.float32)
+
+acc = evaluate()
+print('\nAccuracy : ' + str(acc*100) + '%')
+
+
+
