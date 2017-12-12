@@ -1,2 +1,2 @@
 # digit_recognition
-Digit recognition using linear regression
+Digit recognition using logistic regression
