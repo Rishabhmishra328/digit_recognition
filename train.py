@@ -6,8 +6,9 @@ from progress.bar import Bar
 no_layer = 2
 layer_size = [784, 10]
 learning_rate = 2.0
-biases = np.random.randn(10,1)
-weights = np.random.randn(10, 784)
+hidden_layer = np.ones(30).reshape(30,1)
+biases = [np.random.randn(30,1),np.random.randn(10,1)]
+weights = [np.random.randn(30, 784),np.random.randn(10, 30)]
 
 def load_data():
     f = gzip.open('./mnist.pkl.gz', 'rb')
@@ -40,19 +41,25 @@ def sigmoid_prime(z):
 def train():
     #loadong mnist data
     training_data, validation_data, test_data = load_data_wrapper()
+    net_delta_bias_hidden_layer = 0
+    net_delta_weights_hidden_layer = 0
     net_delta_bias = 0
     net_delta_weights = 0
     training_pbar = Bar('Training Progress', max = len(training_data)*50)
     for i in range(50):
         for x,y in training_data:
             training_pbar.next()
-            activation = sigmoid(np.dot(weights, x) + biases)
+            hidden_layer = sigmoid(np.dot(weights[0], x) + biases[0])
+            activation = sigmoid(np.dot(weights[1], hidden_layer) + biases[1])
             cost = activation - y
-            delta = cost * sigmoid_prime(activation)
+            delta_hidden_layer = cost * sigmoid_prime(activation)
+            net_delta_bias_hidden_layer += delta_hidden_layer
+            net_delta_weights_hidden_layer += np.dot(delta_hidden_layer, hidden_layer.transpose())
+            delta = np.dot(weights[1].transpose(), delta_hidden_layer) * sigmoid_prime(hidden_layer)
             net_delta_bias += delta
             net_delta_weights += np.dot(delta, x.transpose())
 
-    return (net_delta_weights,net_delta_bias, len(training_data))
+    return (net_delta_weights,net_delta_bias,net_delta_weights_hidden_layer,net_delta_bias_hidden_layer, len(training_data))
 
 def evaluate():
     #loading mnist data
@@ -61,7 +68,8 @@ def evaluate():
     test_pbar = Bar('Test Progress', max = len(test_data))
     for x,y in test_data:
         test_pbar.next()
-        activation = sigmoid(np.dot(weights, x) + biases)
+        activation_hidden_layer = sigmoid(np.dot(weights[0], x) + biases[0])
+        activation = sigmoid(np.dot(weights[1], activation_hidden_layer) + biases[1])
         prediction = np.argmax(activation)
         if(prediction ==  y):
             accuracy += 1
@@ -69,14 +77,23 @@ def evaluate():
 
 
         
-nw,nb,size = train()
+nw,nb,nwhl,nbhl,size = train()
 
-biases_correction = learning_rate*nb/size
-for bc,b in zip(biases_correction,biases):
+biases_correction = learning_rate*nbhl/size
+for bc,b in zip(biases_correction,biases[1]):
     b = np.asarray(b-bc, dtype = np.float32)
 
+
+biases_correction = learning_rate*nb/size
+for bc,b in zip(biases_correction,biases[0]):
+    b = np.asarray(b-bc, dtype = np.float32)
+
+weights_correction = learning_rate*nwhl/size
+for wc,w in zip(weights_correction,weights[1]):
+    w = np.asarray(w-wc, dtype = np.float32)
+
 weights_correction = learning_rate*nw/size
-for wc,w in zip(weights_correction,weights):
+for wc,w in zip(weights_correction,weights[0]):
     w = np.asarray(w-wc, dtype = np.float32)
 
 acc = evaluate()
