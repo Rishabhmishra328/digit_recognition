@@ -1,18 +1,18 @@
 import tensorflow as tf
+import model as mod
 import input_data
 
-
-class Model():
+class Train():
 
     def __init__(self, model, learning_rate,epochs,batch, display_step):
 
         self.mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
 
         #params
-        self.learning_rate = 0.01
-        self.epochs = 50
-        self.batch  = 100
-        self.display_step = 2
+        self.learning_rate = learning_rate
+        self.epochs = epochs
+        self.batch  = batch
+        self.display_step = 1
         self.x = tf.placeholder(tf.float32, [None, 784])
         self.y = tf.placeholder(tf.float32, [None, 10])
         self.model, self.cost_function = self.get_model(model, self.x, self.y)
@@ -52,18 +52,18 @@ class Model():
            accuracy = tf.reduce_mean(tf.cast(predictions, 'float'))
            print('Accuracy : ', accuracy.eval({self.x: self.mnist.test.images, self.y: self.mnist.test.labels}))
 
-    def get_model(self, model, X, Y):
+    def get_model(self, model, x, y):
 
-        # if (model == 'cnn')
-        #model
-        W = tf.Variable(tf.zeros([784, 10]))
-        b = tf.Variable(tf.zeros([10]))
+        if (model == 'linear_regression'):
+            model,cost_ftn = mod.Model(x = x, y = y).get_linear_model()
 
-        model = tf.nn.softmax(tf.matmul(X, W) + b)
-    
-        #cross entropy
-        cost_ftn = -tf.reduce_sum(Y * tf.log(model))
+        if (model == 'cnn'):
+            m_class = mod.Model(x = x, y = y)
+            model,cost_ftn = m_class.get_cnn_model()
 
         return model, cost_ftn
+
+model = Train(model = 'cnn', learning_rate = 0.001,epochs = 5,batch =20, display_step = 1)
+model.train()
 
 
