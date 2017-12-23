@@ -1,5 +1,5 @@
 # Digit recognition
-Digit recognition using logistic regression on MNIST digit dataset.
+Digit recognition using linear regression on MNIST digit dataset.
 
 ## Tensorflow installation
 *See [Installing TensorFlow](https://www.tensorflow.org/get_started/os_setup.html) for instructions on how to install our release binaries or how to build from source.*
