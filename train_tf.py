@@ -63,7 +63,4 @@ class Train():
 
         return model, cost_ftn
 
-model = Train(model = 'cnn', learning_rate = 0.001,epochs = 5,batch =20, display_step = 1)
-model.train()
-
 
