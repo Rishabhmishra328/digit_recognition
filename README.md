@@ -34,3 +34,17 @@ $ python
 ## Requirements
 
 -Tensorflow
+
+## To run
+To run the CNN network, run the python compiler in the source directory and type the following:
+```python
+>>> import train as t
+>>> model = t.Train(model = 'cnn', learning_rate = 0.001, epochs = 5, batch =20, display_step = 1)
+>>> model.train()
+```
+Similarly, for a linear regression model, run the following:
+```python
+>>> import train as t
+>>> model = t.Train(model = 'linear_regression', learning_rate = 0.001, epochs = 500, batch =100, display_step = 1)
+>>> model.train()
+```
