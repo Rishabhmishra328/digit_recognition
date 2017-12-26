@@ -63,4 +63,7 @@ class Train():
 
         return model, cost_ftn
 
+model = Train(model = 'linear_regression', learning_rate = 0.01,epochs = 50,batch =20, display_step = 1)
+model.train()
+
 
