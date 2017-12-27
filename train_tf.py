@@ -1,6 +1,8 @@
 import tensorflow as tf
 import model as mod
 import input_data
+import cv2
+import numpy as np
 
 class Train():
 
@@ -16,6 +18,17 @@ class Train():
         self.x = tf.placeholder(tf.float32, [None, 784])
         self.y = tf.placeholder(tf.float32, [None, 10])
         self.model, self.cost_function = self.get_model(model, self.x, self.y)
+
+
+    def predict_segment(self, filename):
+      filepath = './segments/' + filename + '.jpg'
+      print(filepath)
+      img = cv2.imread('./segments/' + filename + '.jpg')
+      img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+      img = cv2.bitwise_not(img)
+      img = img.astype(dtype = np.float32)/255
+      img = np.array(img.ravel()).reshape(1,784)
+      return img
 
     def train(self):
 
@@ -38,6 +51,7 @@ class Train():
                    batch_x, batch_y = self.mnist.train.next_batch(self.batch)
                    #fitting data
                    sess.run(optimizer, feed_dict = {self.x: batch_x, self.y: batch_y})
+                   # print(batch_x[0].shape)
                    #calculating total loss
                    avg_cost += sess.run(self.cost_function, feed_dict = {self.x: batch_x, self.y: batch_y})/total_batch
                #display logs each iteration
@@ -51,6 +65,11 @@ class Train():
            #accuracy
            accuracy = tf.reduce_mean(tf.cast(predictions, 'float'))
            print('Accuracy : ', accuracy.eval({self.x: self.mnist.test.images, self.y: self.mnist.test.labels}))
+           digit_prediction = tf.argmax(self.model, 1)
+           for i in range(69):
+                  i += 1
+                  digit = self.predict_segment(str(i))
+                  print('Prediction : ', i, digit_prediction.eval({self.x: digit}))
 
     def get_model(self, model, x, y):
 
@@ -62,6 +81,19 @@ class Train():
             model,cost_ftn = m_class.get_cnn_model()
 
         return model, cost_ftn
+
+    # def predict_digit(self, img):
+    #     print(img.shape)
+    #     print(img)
+    #     #testing
+    #     predictions = tf.argmax(self.model, 1)
+    #     with tf.Session() as sess:
+
+    #        sess.run(init)
+
+    #        prediction = sess.run(self.model, feed_dict = {self.x: img})
+    #        print('Confidence : ', prediction)
+
 
 model = Train(model = 'linear_regression', learning_rate = 0.01,epochs = 50,batch =20, display_step = 1)
 model.train()
