@@ -3,7 +3,7 @@ import matplotlib.patches as mpatches
 import selectivesearch as ss
 import cv2
 import os
-import train_tf as ttf
+# import train_tf as ttf
 import numpy as np
 
 def main():
@@ -47,8 +47,8 @@ def main():
             cv2.imwrite('./segments/' + str(image_name) + '.jpg', cropped)
             image_name += 1
         ax.add_patch(rect)
-    predict_segment(str(image_name-2) + '.jpg')
-    # plt.show()
+    # predict_segment(str(image_name-2) + '.jpg')
+    plt.show()
 
 def predict_segment(filename):
     img = cv2.imread('./segments/' + '2.jpg')
@@ -63,5 +63,5 @@ def predict_segment(filename):
 
 
 
-# if __name__ == "__main__":
-#     main()
+if __name__ == "__main__":
+    main()
