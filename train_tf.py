@@ -21,14 +21,19 @@ class Train():
 
 
     def predict_segment(self, filename , imgpixel):
-      filepath = './segments/' + filename + '.jpg'
-      img = cv2.imread('./segments/' + filename + '.jpg')
+      filepath = filename + '.jpg'
+      img = cv2.imread(filepath)
       img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
       img = cv2.bitwise_not(img)
       img = img.astype(dtype = np.float32)/255
-      reduction_factor = 28 / imgpixel
-      print(img.shape)
-      img = np.array(img.ravel()).reshape(1,784)
+      reduction_factor = 28.0 / imgpixel
+      img  = cv2.resize(img, ((int)(img.shape[0] * (reduction_factor)), (int)(img.shape[1] * (reduction_factor))))
+      # Input Layer
+      input_layer = tf.reshape(img, [-1, img.shape[0], img.shape[1], 1])
+      # Convolutional Layer #1
+      conv = tf.layers.conv2d(inputs=input_layer, filters=32, kernel_size=[28, 28], kernel_initializer= tf.contrib.layers.xavier_initializer(dtype=tf.float32) , padding="same", activation=tf.nn.relu)
+      print(tf.cast(input_layer, dtype = tf.float32))
+      print(conv.shape)
       return img
 
     def train(self):
@@ -66,9 +71,7 @@ class Train():
            #accuracy
            accuracy = tf.reduce_mean(tf.cast(predictions, 'float'))
            print('Accuracy : ', accuracy.eval({self.x: self.mnist.test.images, self.y: self.mnist.test.labels}))
-           digit_prediction = tf.argmax(self.model, 1)
-           digit = self.predict_segment('1')
-           print('Prediction : ', i, digit_prediction.eval({self.x: digit}))
+           digit = self.predict_segment('digit_color', 100)
 
     def get_model(self, model, x, y):
 
